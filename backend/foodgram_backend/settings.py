@@ -4,13 +4,13 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-dotenv.load_dotenv(dotenv_path=BASE_DIR.parent.parent / '.env')
+dotenv.load_dotenv(dotenv_path=BASE_DIR.parent / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'None')
 
 DEBUG = os.getenv('DEBUG', default='False') == 'True'
 
-ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS', default='*')]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(' ')
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
