@@ -1,0 +1,5 @@
+Список покупок:
+{% for name, details in ingredients.items %}
+    {{ name }} ({{ details.unit }}) — {{ details.quantity }}
+{% endfor %}
+Foodgram - продуктовый помощник © 2024 Artem Yurkov & Practicum
