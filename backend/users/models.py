@@ -40,7 +40,7 @@ class Subscribe(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         related_name='subscriber'
-        )
+    )
     subscribing = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
