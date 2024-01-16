@@ -36,9 +36,9 @@ class RecipeAdmin(admin.ModelAdmin):
             )
         return 'No Image'
 
-    display_author_data.short_description = 'Author'
-    display_favorite_count.short_description = 'In favorites'
-    display_image_preview.short_description = 'Image Preview'
+    display_author_data.short_description = 'Автор'
+    display_favorite_count.short_description = 'В избранном'
+    display_image_preview.short_description = 'Превью изображения'
 
 
 class IngredientAdmin(admin.ModelAdmin):
