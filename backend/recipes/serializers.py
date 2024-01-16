@@ -66,7 +66,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return obj.carts.filter(user=user).exists()
 
 
-class CreateRecipeSerializer(serializers.ModelSerializer):
+class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(
         many=True,
     )

@@ -12,14 +12,14 @@ from .models import Recipe, Tag, Ingredient, Cart, RecipeIngredient, Favorite
 from .paginators import SubscriptionsPageNumberPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
-    TagSerializer, CreateRecipeSerializer, RecipeReadSerializer,
+    TagSerializer, RecipeCreateSerializer, RecipeReadSerializer,
     IngredientSerializer, RecipeToCartSerializer
 )
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = CreateRecipeSerializer
+    serializer_class = RecipeCreateSerializer
     pagination_class = SubscriptionsPageNumberPagination
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
@@ -159,7 +159,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return RecipeReadSerializer
-        return CreateRecipeSerializer
+        return RecipeCreateSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):
