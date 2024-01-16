@@ -53,4 +53,4 @@ class Subscribe(models.Model):
         unique_together = ('subscriber', 'subscribing')
 
     def __str__(self):
-        return f'{self.subscriber} to {self.subscribing}'
+        return f'{self.subscriber.username} - {self.subscribing.username}'

@@ -6,9 +6,9 @@ User = get_user_model()
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField('Название', max_length=200)
     color = models.CharField('Цвет', max_length=7, default='#000000')
-    slug = models.SlugField(max_length=200, unique=True)
+    slug = models.SlugField('Слаг', max_length=200, unique=True)
 
     def __str__(self):
         return self.name
@@ -77,7 +77,7 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField(verbose_name='Количество')
 
     def __str__(self):
-        return f'x{self.amount} {self.ingredient.name} для {self.recipe.name}'
+        return f'{self.amount} {self.ingredient.name} для {self.recipe.name}'
 
     class Meta:
         verbose_name = 'Кол-во ингредиентов (связующая таблица)'
@@ -127,4 +127,4 @@ class Favorite(models.Model):
         unique_together = ['user', 'recipe']
 
     def __str__(self):
-        return f'Favorite with "{self.recipe}" of {self.user.username}'
+        return f'"{self.recipe}" / {self.user.username}'
