@@ -89,7 +89,7 @@ cd foodgram-project-react
 ```bash
 scp docker-compose.yml <username>@<host>:/home/<username>/docker-compose.yml
 scp nginx.conf <username>@<host>:/home/<username>/nginx.conf
-``3
+```
 4. Создайте на сервере файл *.env*:
 ```bash
 # Для Linux
@@ -116,9 +116,9 @@ sudo docker-compose up -d --build
 ```
 7. (Только для первого деплоя) Выполните команды:
 ```bash
-sudo docker-compose exec backend python manage.py collectstatic --noinput
-sudo docker-compose exec backend python manage.py migrate --noinput
-sudo docker-compose exec backend python manage.py predata
+sudo docker compose exec backend python manage.py collectstatic --noinput
+sudo docker compose exec backend python manage.py migrate --noinput
+sudo docker compose exec backend python manage.py predata
 ``` 
 8. Создайте суперпользователя:
 ```bash
