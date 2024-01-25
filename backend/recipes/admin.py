@@ -1,16 +1,16 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import (
-    Recipe, RecipeIngredient,
-    Ingredient, Tag,
-    Cart, Favorite)
+
+from .models import Cart, Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 
 
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
     extra = 1
+    min_num = 1
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'display_image_preview', 'display_author_data',
@@ -41,6 +41,7 @@ class RecipeAdmin(admin.ModelAdmin):
     display_image_preview.short_description = 'Превью изображения'
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'measurement_unit',
@@ -51,9 +52,7 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(RecipeIngredient)
-admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag)
 admin.site.register(Cart)
 admin.site.register(Favorite)

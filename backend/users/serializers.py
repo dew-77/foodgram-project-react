@@ -1,13 +1,23 @@
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
 from djoser.serializers import UserCreateMixin
+from rest_framework import serializers
+
+from foodgram_backend.constants import PASSWORD_MAX_LENGTH
 from recipes.models import Recipe
+from .models import Subscribe
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.BooleanField(default=False)
+    is_subscribed = serializers.SerializerMethodField()
+
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return Subscribe.objects.filter(
+            subscriber=user, subscribing=obj).exists()
 
     class Meta:
         model = User
@@ -15,10 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email', 'id', 'username',
             'first_name', 'last_name', 'is_subscribed'
         )
-        read_only_fields = (
-            'email', 'id', 'username',
-            'first_name', 'last_name', 'is_subscribed'
-        )
+        read_only_fields = fields
 
 
 class RecipeSubscribeSerializer(serializers.ModelSerializer):
@@ -83,7 +90,7 @@ class UserRecipeSerializer(UserSerializer):
 
 class CreateUserSerializer(UserCreateMixin, serializers.ModelSerializer):
     password = serializers.CharField(
-        write_only=True, max_length=150,
+        write_only=True, max_length=PASSWORD_MAX_LENGTH,
         style={"input_type": "password"},
     )
 

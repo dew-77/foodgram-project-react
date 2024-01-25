@@ -1,20 +1,20 @@
-from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 
-from .models import Recipe, Ingredient, Tag, RecipeIngredient
 from users.serializers import UserSerializer
+from .models import Cart, Ingredient, Favorite, Recipe, RecipeIngredient, Tag
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit')
+        fields = '__all__'
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'color', 'slug')
+        fields = '__all__'
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -127,7 +127,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     @staticmethod
     def create_ingredients(recipe, ingredients):
         ingredient_list = []
-        for ingredient_data in ingredients:
+
+        for ingredient_data in sorted(ingredients, key=lambda x: x['id'].name):
             ingredient_list.append(
                 RecipeIngredient(
                     ingredient=ingredient_data.pop('id'),
@@ -176,3 +177,29 @@ class RecipeToCartSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time',)
         read_only_fields = ('id', 'name', 'image', 'cooking_time',)
+
+
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        fields = '__all__'
+
+    def validate(self, data):
+        if Cart.objects.filter(
+                user=data.get('user'), recipe=data.get('recipe')).exists():
+            raise serializers.ValidationError(
+                'Recipe already added into cart.')
+        return data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+
+    def validate(self, data):
+        if Favorite.objects.filter(
+                user=data.get('user'), recipe=data.get('recipe')).exists():
+            raise serializers.ValidationError(
+                'Recipe already added into favorite.')
+        return data

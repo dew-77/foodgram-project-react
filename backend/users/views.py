@@ -1,12 +1,15 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from djoser.views import UserViewSet as DjoserUserViewSet
+
+from recipes.paginators import CustomPageNumberPagination
 from .models import Subscribe
-from .paginators import UsersPageNumberPagination
 from .serializers import UserRecipeSerializer
 
 User = get_user_model()
@@ -15,7 +18,7 @@ User = get_user_model()
 class UserViewSet(DjoserUserViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
-    pagination_class = UsersPageNumberPagination
+    pagination_class = CustomPageNumberPagination
 
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
@@ -35,36 +38,32 @@ class UserViewSet(DjoserUserViewSet):
             page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, methods=['post', 'delete'],
+    @action(detail=True, methods=['post'],
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         subscribing_user = get_object_or_404(User, pk=id)
+        serializer = UserRecipeSerializer(
+            subscribing_user, data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        Subscribe.objects.create(
+            subscriber=request.user,
+            subscribing=subscribing_user
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'POST':
-            serializer = UserRecipeSerializer(
-                subscribing_user, data=request.data,
-                context={'request': request}
-            )
-            serializer.is_valid(raise_exception=True)
-            Subscribe.objects.create(
-                subscriber=request.user,
-                subscribing=subscribing_user
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        elif request.method == 'DELETE':
-            try:
-                subscription = Subscribe.objects.get(
-                    subscriber=request.user, subscribing=subscribing_user)
-            except Subscribe.DoesNotExist:
-                return Response(
-                    {"errors": "Subscription not found."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, id=None):
+        try:
+            subscribing_user = get_object_or_404(User, pk=id)
+            subscription = Subscribe.objects.get(
+                subscriber=request.user, subscribing=subscribing_user)
             subscription.delete()
-
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ObjectDoesNotExist:
+            # 400 - по ТЗ вместо 404
             return Response(
-                {"message": "Subscription deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT
+                {'detail': 'The subscription does not exist.'},
+                status=status.HTTP_400_BAD_REQUEST
             )

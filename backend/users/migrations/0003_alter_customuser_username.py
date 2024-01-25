@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='customuser',
             name='username',
-            field=models.CharField(max_length=150, unique=True, validators=[users.validators.UsernameMeValidator, django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='Юзернейм'),
+            field=models.CharField(max_length=150, unique=True, validators=[users.validators.UsernameValidator, django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='Юзернейм'),
         ),
     ]
