@@ -62,7 +62,6 @@ class UserViewSet(DjoserUserViewSet):
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ObjectDoesNotExist:
-            # 400 - по ТЗ вместо 404
             return Response(
                 {'detail': 'The subscription does not exist.'},
                 status=status.HTTP_400_BAD_REQUEST

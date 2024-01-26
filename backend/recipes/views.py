@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -35,7 +36,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeCreateSerializer
 
     @staticmethod
-    def create_object(request, pk, type):
+    def create_object(request, pk, obj_serializer):
         try:
             recipe = Recipe.objects.get(pk=pk)
         except Recipe.DoesNotExist:
@@ -43,42 +44,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {"errors": "Recipe not found."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if type == 'cart':
-            cart_serializer = CartSerializer(
-                data={'user': request.user.id, 'recipe': recipe.id}
-            )
-            cart_serializer.is_valid(raise_exception=True)
-            cart_serializer.save()
-        elif type == 'favorite':
-            favorite_serializer = FavoriteSerializer(
-                data={'user': request.user.id, 'recipe': recipe.id}
-            )
-            favorite_serializer.is_valid(raise_exception=True)
-            favorite_serializer.save()
+
+        obj_serializer_with_data = obj_serializer(
+            data={'user': request.user.id, 'recipe': recipe.id}
+        )
+        obj_serializer_with_data.is_valid(raise_exception=True)
+        obj_serializer_with_data.save()
+
         serializer = RecipeToCartSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @staticmethod
-    def delete_object(request, pk, type):
+    def delete_object(request, pk, obj_model):
         recipe = get_object_or_404(Recipe, pk=pk)
-        if type == 'cart':
-            try:
-                object_to_remove = Cart.objects.get(
-                    user=request.user, recipe=recipe)
-            except Cart.DoesNotExist:
-                return Response(
-                    {"errors": "Recipe not found in the cart."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        elif type == 'favorite':
-            try:
-                object_to_remove = Favorite.objects.get(
-                    user=request.user, recipe=recipe)
-            except Favorite.DoesNotExist:
-                return Response(
-                    {"errors": "Recipe not found in the favorites."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        try:
+            object_to_remove = obj_model.objects.get(
+                user=request.user, recipe=recipe)
+        except ObjectDoesNotExist:
+            return Response(
+                {"errors": "Object not found."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         object_to_remove.delete()
 
@@ -91,23 +77,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_name='shopping_cart', permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         return self.create_object(
-            request, pk, 'cart')
+            request, pk, CartSerializer)
 
     @action(methods=['post'], detail=True, url_path='favorite',
             url_name='favorite', permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
         return self.create_object(
-            request, pk, 'favorite')
+            request, pk, FavoriteSerializer)
 
     @shopping_cart.mapping.delete
     def shopping_cart_delete(self, request, pk):
         return self.delete_object(
-            request, pk, 'cart')
+            request, pk, Cart)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk=None):
         return self.delete_object(
-            request, pk, 'favorite')
+            request, pk, Favorite)
 
     @action(methods=['get'], detail=False,
             url_path='download_shopping_cart',
