@@ -106,7 +106,6 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             Деплой проекта Foodgram в репозитории ${{ github.repository }} успешно выполнен!
-            Время деплоя: ${{ github.event.before }}.
 
   telegram_message_failure:
     name: Send Telegram message
